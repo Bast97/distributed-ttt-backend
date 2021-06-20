@@ -76,8 +76,8 @@ public class ServerSocket {
   public void onWebSocketText(String message) {
     logger.fine("Received message: " + message);
     try {
-      message = message.substring( 1, message.length() - 1 );
-      message = "\"" + this.gameID + ": " + message + "\"";
+      // message = message.substring( 1, message.length() - 1 );
+      // message = "\"" + this.gameID + ": " + message + "\"";
       System.out.println(message);
 
       for (ServerSocket dstSocket : ServerSocket.sockets.values()) {

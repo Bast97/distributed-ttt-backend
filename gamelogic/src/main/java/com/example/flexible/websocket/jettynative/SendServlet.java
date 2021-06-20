@@ -124,7 +124,7 @@ public class SendServlet extends HttpServlet {
    */
   public static String getWebSocketAddress() {
     // Use ws://127.0.0.1:8080/echo when testing locally
-    String webSocketHost = "127.0.0.1:8080";
+    String webSocketHost = "127.0.0.1:8765";
     String webSocketProtocolPrefix = WEBSOCKET_PROTOCOL_PREFIX;
 
     // On App Engine flexible environment, use wss://project-id.appspot.com/echo
