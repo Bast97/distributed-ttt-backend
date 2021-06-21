@@ -7,6 +7,7 @@ public class TTTMatch {
 	private HashMap<String, Square> squares;
 	private Boolean gameOver = false;
 	private String userX, userO, gameID;
+	private int moveCount = 0;
 
 	public String getUserX() {
 		return userX;
@@ -22,6 +23,17 @@ public class TTTMatch {
 
 	public Boolean isOver() {
 		return gameOver;
+	}
+
+	public String getWinnerUID() {
+		switch (this.winner) {
+			case X:
+				return this.getUserX();
+			case O:
+				return this.getUserO();
+			default:
+				return null;
+		}
 	}
 
 	public TTTMatch(String gameID, String x, String o) {
@@ -56,29 +68,63 @@ public class TTTMatch {
 			switch (whoseTurn) {
 				case X:
 					squares.put(turn.getMove(), Square.X);
+					moveCount++;
+					whoseTurn = Square.O;
 					break;
 				case O:
 					squares.put(turn.getMove(), Square.O);
+					moveCount++;
+					whoseTurn = Square.X;
 					break;
 			}
-			if (evaluateWinner())
+			if (moveCount >= 5 && evaluate())
 				this.gameOver = true;
-			else
-				switch (whoseTurn) {
-					case X:
-						whoseTurn = Square.O;
-						break;
-					case O:
-						whoseTurn = Square.X;
-						break;
-				}
+			if (moveCount == 9)
+				this.gameOver = true;
 			return true; // valid turn, return true
 		}
 	}
 
-	public Boolean evaluateWinner() {
-		// Clever function that determines if there is a winner; sets MatchState.winner
-		// if there is and returns true
-		return false;
+	public Boolean evaluate() {
+
+		// I'm a bit ashamed of this
+		if (squares.get("A1") != null && squares.get("A1") == squares.get("B1")
+				&& squares.get("B1") == squares.get("C1")) {
+			this.winner = squares.get("C1");
+		}
+		if (squares.get("A2") != null && squares.get("A2") == squares.get("B2")
+				&& squares.get("B2") == squares.get("C2")) {
+			this.winner = squares.get("C2");
+		}
+		if (squares.get("A3") != null && squares.get("A3") == squares.get("B3")
+				&& squares.get("B3") == squares.get("C3")) {
+			this.winner = squares.get("C3");
+		}
+		if (squares.get("A1") != null && squares.get("A1") == squares.get("A2")
+				&& squares.get("A2") == squares.get("A3")) {
+			System.out.println(squares.get("A3"));
+			this.winner = squares.get("A3");
+		}
+		if (squares.get("B1") != null && squares.get("B1") == squares.get("B2")
+				&& squares.get("B2") == squares.get("B3")) {
+			this.winner = squares.get("B3");
+		}
+		if (squares.get("C1") != null && squares.get("C1") == squares.get("C2")
+				&& squares.get("C2") == squares.get("C3")) {
+			this.winner = squares.get("C3");
+		}
+		if (squares.get("A1") != null && squares.get("A1") == squares.get("B2")
+				&& squares.get("B2") == squares.get("C3")) {
+			this.winner = squares.get("C3");
+		}
+		if (squares.get("C1") != null && squares.get("C1") == squares.get("B2")
+				&& squares.get("B2") == squares.get("A3")) {
+			this.winner = squares.get("A3");
+		}
+
+		if (this.winner != null)
+			return true;
+		else
+			return false;
 	}
 }
