@@ -12,7 +12,7 @@ public class TurnDecoder implements Decoder.Text<TicTacTurn> {
 
     @Override
     public TicTacTurn decode(String s) throws DecodeException {
-        s = s.substring(1, s.length()-1).replace("\\\"", "\"");     //TODO: Removing Escape Characters as Workaround for testing, change later
+       // s = s.substring(1, s.length()-1).replace("\\\"", "\"");     //TODO: Removing Escape Characters as Workaround for testing, change later
         TicTacTurn message = gson.fromJson(s, TicTacTurn.class);
         return message;
     }

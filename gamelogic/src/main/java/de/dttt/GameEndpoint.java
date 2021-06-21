@@ -3,7 +3,6 @@ package de.dttt;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Logger;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -19,24 +18,33 @@ import javax.websocket.server.ServerEndpoint;
 @ServerEndpoint(value = "/{gameID}", decoders = TurnDecoder.class, encoders = TurnEncoder.class)
 public class GameEndpoint {
     private Session session;
-    private static TTTMatch matchState = new TTTMatch("Abra", "123", "456"); // TODO: Where should this be initialised?
-    private static final Set<GameEndpoint> gameEndpoints = new CopyOnWriteArraySet<>();
-    private static HashMap<String, String> users = new HashMap<>();
-    private Logger logger = Logger.getLogger("Game");
+    private TTTMatch matchState;
+    private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
+    private static HashMap<String, TTTMatch> games = new HashMap<>(); // TODO: This gets stale
+    private static HashMap<String, String> users = new HashMap<>(); // TODO:: This gets stale
 
     @OnOpen
     public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
 
         this.session = session;
-        gameEndpoints.add(this);
-        System.out.println("\nSocket " + session.getId() + " connected to game " + gameID);
-        logger.fine("Socket Connected: " + session + " to game " + gameID);
+        connections.add(this);
+
+        System.out.println("\nSocket " + session.getId() + " connected to endpoint " + gameID);
+
+        if (games.containsKey(gameID)) {
+            this.matchState = games.get(gameID);
+        } else if (true) { // TODO: Call Matchmaker for Match Details here
+            TTTMatch newMatch = new TTTMatch(gameID, "123", "456");
+            games.put(gameID, newMatch);
+            this.matchState = newMatch;
+            System.out.println("New Match was created");
+        }
+
     }
 
     @OnMessage
     public void onMessage(Session session, @PathParam("gameID") String gameID, TicTacTurn turn)
             throws IOException, EncodeException {
-        logger.fine("Player " + turn.getPlayerUID() + " sent move " + turn.getMove() + " into game " + gameID);
         System.out.println("Player " + turn.getPlayerUID() + " sent move " + turn.getMove() + " into game " + gameID);
         users.put(turn.getPlayerUID(), session.getId());
         if (matchState.nextTurn(turn)) {
@@ -49,8 +57,7 @@ public class GameEndpoint {
 
     @OnClose
     public void onClose(Session session) throws IOException, EncodeException {
-        gameEndpoints.remove(this);
-        logger.fine("Socket disconnected: " + session.getId());
+        connections.remove(this);
         System.out.println("Socket disconnected: " + session.getId());
     }
 
@@ -65,7 +72,7 @@ public class GameEndpoint {
         sessions.add(users.get(this.matchState.getUserX()));
         sessions.add(users.get(this.matchState.getUserO()));
 
-        gameEndpoints.forEach(endpoint -> {
+        connections.forEach(endpoint -> {
             synchronized (endpoint) {
                 if (sessions.contains(endpoint.session.getId())) {
                     try {
