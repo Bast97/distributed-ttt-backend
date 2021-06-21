@@ -32,6 +32,8 @@ public class TTTMatch {
 	}
 
 	public Boolean nextTurn(TicTacTurn turn) {
+		if (!turn.getMove().matches("[ABC][123]"))
+			return false;
 		if (this.gameOver)
 			return false;
 		switch (whoseTurn) {

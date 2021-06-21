@@ -5,9 +5,11 @@ public class TicTacTurn {
     private String move;
 
     public TicTacTurn(String player, String move) {
-        //TODO: Validate
-        this.player = player;
-        this.move = move;
+        // Constructor is never called, validation is done before updating match
+        if (move.matches("[ABC][123]")) {
+            this.move = move;
+            this.player = player;
+        }
     }
 
     public String getPlayerUID() {
