@@ -15,12 +15,12 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-@ServerEndpoint(value = "/{gameID}", decoders = TurnDecoder.class, encoders = TurnEncoder.class)
+@ServerEndpoint(value = "/{gameID}", decoders = TurnDecoder.class, encoders = MatchEncoder.class)
 public class GameEndpoint {
     private Session session;
     private TTTMatch matchState;
     private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
-    private static HashMap<String, TTTMatch> games = new HashMap<>(); // TODO: This gets stale
+    private static HashMap<String, TTTMatch> games = new HashMap<>();
     private static HashMap<String, String> users = new HashMap<>(); // TODO:: This gets stale
 
     @OnOpen
@@ -50,6 +50,10 @@ public class GameEndpoint {
         if (matchState.nextTurn(turn)) {
             broadcast(matchState);
             System.out.println("Move was legal. State updated.");
+            if (matchState.isOver()) {
+                System.out.println("Game Over! Removing...");
+                games.remove(gameID);
+            }
         } else {
             System.out.println("Move was illegal! State was not updated.");
         }

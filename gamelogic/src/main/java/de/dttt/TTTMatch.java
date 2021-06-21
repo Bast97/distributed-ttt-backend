@@ -20,6 +20,10 @@ public class TTTMatch {
 		return gameID;
 	}
 
+	public Boolean isOver() {
+		return gameOver;
+	}
+
 	public TTTMatch(String gameID, String x, String o) {
 		this.gameID = gameID;
 		this.userX = x;

@@ -6,7 +6,7 @@ import javax.websocket.EndpointConfig;
 
 import com.google.gson.Gson;
 
-public class TurnEncoder implements Encoder.Text<TTTMatch> {
+public class MatchEncoder implements Encoder.Text<TTTMatch> {
 
     private static Gson gson = new Gson();
 
