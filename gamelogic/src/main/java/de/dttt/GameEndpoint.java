@@ -15,7 +15,11 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-@ServerEndpoint(value = "/{gameID}", decoders = TurnDecoder.class, encoders = MatchEncoder.class)
+import de.dttt.beans.WSBean;
+import de.dttt.beans.WSHello;
+import de.dttt.beans.WSTurn;
+
+@ServerEndpoint(value = "/{gameID}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
 public class GameEndpoint {
 	private Session session;
 	private TTTMatch matchState;
@@ -43,9 +47,26 @@ public class GameEndpoint {
 	}
 
 	@OnMessage
-	public void onMessage(Session session, @PathParam("gameID") String gameID, TicTacTurn turn)
+	public void onMessage(Session session, @PathParam("gameID") String gameID, WSBean bean)
 			throws IOException, EncodeException {
-		System.out.println("Player " + turn.getPlayerUID() + " sent move " + turn.getMove() + " into game " + gameID);
+
+		switch (bean.getType()) {
+			case "TURN":
+				WSTurn turn = new WSTurn(bean.getData());
+				handleTurn(turn, gameID);
+				break;
+			case "HELLO":
+				WSHello hello = new WSHello(bean.getData());
+				users.put(hello.getPlayerUID(), session.getId());
+				break;
+			default:
+				System.out.println("Unknown Message Type!");
+		}
+	}
+
+	private void handleTurn(WSTurn turn, String gameID) {
+		System.out.println(
+				"Player " + turn.getPlayerUID() + " sent move " + turn.getX() + turn.getY() + " into game " + gameID);
 		users.put(turn.getPlayerUID(), session.getId());
 		if (matchState.nextTurn(turn)) {
 			broadcast(matchState);
@@ -74,18 +95,19 @@ public class GameEndpoint {
 		// Do error handling here
 	}
 
-	private void broadcast(TTTMatch message) throws IOException, EncodeException {
+	private void broadcast(TTTMatch message) {
 
-		ArrayList<String> sessions = new ArrayList<>();
-		sessions.add(users.get(this.matchState.getUserX()));
-		sessions.add(users.get(this.matchState.getUserO()));
+		ArrayList<String> participants = new ArrayList<>();
+		participants.add(users.get(this.matchState.getUserX()));
+		participants.add(users.get(this.matchState.getUserO()));
 
 		connections.forEach(endpoint -> {
 			synchronized (endpoint) {
-				if (sessions.contains(endpoint.session.getId())) {
+				if (participants.contains(endpoint.session.getId())) {
 					try {
-						endpoint.session.getBasicRemote().sendObject(message);
-					} catch (IOException | EncodeException e) {
+						endpoint.session.getBasicRemote()
+								.sendText(new WSBean("GAMESTATE", message.toGameState().toJson()).toJson());
+					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}

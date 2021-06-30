@@ -1,10 +1,11 @@
 package de.dttt;
 
-import java.util.HashMap;
+import de.dttt.beans.WSGameState;
+import de.dttt.beans.WSTurn;
 
 public class TTTMatch {
 	private Square whoseTurn = Square.X, winner = null;
-	private HashMap<String, Square> squares;
+	private Square[][] squares = { { null, null, null }, { null, null, null }, { null, null, null } };
 	private Boolean gameOver = false;
 	private String userX, userO, gameID;
 	private int moveCount = 0;
@@ -40,11 +41,11 @@ public class TTTMatch {
 		this.gameID = gameID;
 		this.userX = x;
 		this.userO = o;
-		squares = new HashMap<String, Square>(9, 1);
 	}
 
-	public Boolean nextTurn(TicTacTurn turn) {
-		if (!turn.getMove().matches("[ABC][123]"))
+	public Boolean nextTurn(WSTurn turn) {
+		int chosenSquare = 3 * turn.getX() + turn.getY();
+		if (chosenSquare < 0 || chosenSquare > 8)
 			return false;
 		if (this.gameOver)
 			return false;
@@ -62,17 +63,17 @@ public class TTTMatch {
 			default:
 				return false;
 		}
-		if (squares.get(turn.getMove()) != null)
+		if (squares[turn.getX()][turn.getY()] != null)
 			return false;
 		else {
 			switch (whoseTurn) {
 				case X:
-					squares.put(turn.getMove(), Square.X);
+					squares[turn.getX()][turn.getY()] = Square.X;
 					moveCount++;
 					whoseTurn = Square.O;
 					break;
 				case O:
-					squares.put(turn.getMove(), Square.O);
+					squares[turn.getX()][turn.getY()] = Square.O;
 					moveCount++;
 					whoseTurn = Square.X;
 					break;
@@ -88,43 +89,64 @@ public class TTTMatch {
 	public Boolean evaluate() {
 
 		// I'm a bit ashamed of this
-		if (squares.get("A1") != null && squares.get("A1") == squares.get("B1")
-				&& squares.get("B1") == squares.get("C1")) {
-			this.winner = squares.get("C1");
+		if (squares[0][0] != null && squares[0][0] == squares[1][0] && squares[1][0] == squares[2][0]) {
+			this.winner = squares[2][0];
 		}
-		if (squares.get("A2") != null && squares.get("A2") == squares.get("B2")
-				&& squares.get("B2") == squares.get("C2")) {
-			this.winner = squares.get("C2");
+		if (squares[0][1] != null && squares[0][1] == squares[1][1] && squares[1][1] == squares[2][1]) {
+			this.winner = squares[2][1];
 		}
-		if (squares.get("A3") != null && squares.get("A3") == squares.get("B3")
-				&& squares.get("B3") == squares.get("C3")) {
-			this.winner = squares.get("C3");
+		if (squares[0][2] != null && squares[0][2] == squares[1][2] && squares[1][2] == squares[2][2]) {
+			this.winner = squares[2][2];
 		}
-		if (squares.get("A1") != null && squares.get("A1") == squares.get("A2")
-				&& squares.get("A2") == squares.get("A3")) {
-			System.out.println(squares.get("A3"));
-			this.winner = squares.get("A3");
+		if (squares[0][0] != null && squares[0][0] == squares[0][1] && squares[0][1] == squares[0][2]) {
+			this.winner = squares[0][2];
 		}
-		if (squares.get("B1") != null && squares.get("B1") == squares.get("B2")
-				&& squares.get("B2") == squares.get("B3")) {
-			this.winner = squares.get("B3");
+		if (squares[1][0] != null && squares[1][0] == squares[1][1] && squares[1][1] == squares[1][2]) {
+			this.winner = squares[1][2];
 		}
-		if (squares.get("C1") != null && squares.get("C1") == squares.get("C2")
-				&& squares.get("C2") == squares.get("C3")) {
-			this.winner = squares.get("C3");
+		if (squares[2][0] != null && squares[2][0] == squares[2][1] && squares[2][1] == squares[2][2]) {
+			this.winner = squares[2][2];
 		}
-		if (squares.get("A1") != null && squares.get("A1") == squares.get("B2")
-				&& squares.get("B2") == squares.get("C3")) {
-			this.winner = squares.get("C3");
+		if (squares[0][0] != null && squares[0][0] == squares[1][1] && squares[1][1] == squares[2][2]) {
+			this.winner = squares[2][2];
 		}
-		if (squares.get("C1") != null && squares.get("C1") == squares.get("B2")
-				&& squares.get("B2") == squares.get("A3")) {
-			this.winner = squares.get("A3");
+		if (squares[2][0] != null && squares[2][0] == squares[1][1] && squares[1][1] == squares[0][2]) {
+			this.winner = squares[0][2];
 		}
 
 		if (this.winner != null)
 			return true;
 		else
 			return false;
+	}
+
+	public WSGameState toGameState() {
+		int whoseTurn;
+		if (this.whoseTurn == Square.X)
+			whoseTurn = 1;
+		else
+			whoseTurn = 2;
+
+		int[] stateArray = new int[9];
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				try {
+					switch (this.squares[i][j]) {
+						case X:
+							stateArray[3 * i + j] = 1;
+							break;
+						case O:
+							stateArray[3 * i + j] = 2;
+							break;
+						default:
+							stateArray[3 * i + j] = 0;
+							break;
+					}
+				} catch (NullPointerException e) {
+					stateArray[3 * i + j] = 0;
+				}
+			}
+		}
+		return new WSGameState(stateArray, whoseTurn);
 	}
 }
