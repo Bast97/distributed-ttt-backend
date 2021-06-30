@@ -15,6 +15,10 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+import org.graalvm.compiler.nodes.NodeView.Default;
+
+import com.google.gson.Gson;
+
 @ServerEndpoint(value = "/{gameID}", decoders = TurnDecoder.class, encoders = MatchEncoder.class)
 public class GameEndpoint {
 	private Session session;
@@ -23,13 +27,20 @@ public class GameEndpoint {
 	private static HashMap<String, TTTMatch> games = new HashMap<>();
 	private static HashMap<String, String> users = new HashMap<>(); // TODO:: Users are never removed
 
+	private static Gson gson = new Gson();
+
 	@OnOpen
 	public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
-
+		System.out.println("\n");
 		this.session = session;
 		connections.add(this);
-
-		System.out.println("\nSocket " + session.getId() + " connected to endpoint " + gameID);
+		System.out.println("Socket " + session.getId() + " connected to endpoint " + gameID);
+		System.out.println("Player " + connections.size() + " joined");
+		// session.getBasicRemote().sendText("hello, you are player " + connections.size());
+		
+		// TicTacTurn turn = new TicTacTurn(0, 0, connections.size());
+		// WSBean bean = new WSBean("TURN", new Gson().toJson(turn).toString());
+		// session.getBasicRemote().sendText(new Gson().toJson(bean));
 
 		if (games.containsKey(gameID)) {
 			this.matchState = games.get(gameID);
@@ -43,24 +54,40 @@ public class GameEndpoint {
 	}
 
 	@OnMessage
-	public void onMessage(Session session, @PathParam("gameID") String gameID, TicTacTurn turn)
+	public void onMessage(Session session, @PathParam("gameID") String gameID, WSBean message)
 			throws IOException, EncodeException {
-		System.out.println("Player " + turn.getPlayerUID() + " sent move " + turn.getMove() + " into game " + gameID);
-		users.put(turn.getPlayerUID(), session.getId());
-		if (matchState.nextTurn(turn)) {
-			broadcast(matchState);
-			System.out.println("Move was legal. State updated.");
-			if (matchState.isOver()) {
-				try {
-					System.out.println(matchState.getWinnerUID() + " won!");
-				} finally {
-					System.out.println("Game over! Removing...");
-				}
-				games.remove(gameID);
-			}
-		} else {
-			System.out.println("Move was illegal! State was not updated.");
+		switch (message.getType()) {
+			case "TURN":
+				TicTacTurn turn = gson.fromJson(message.getData(), TicTacTurn.class);
+				System.out.println("x: " + turn.getX() + " y: " + turn.getY() + " color: " + turn.getColor());
+				boolean isLegalMove = this.matchState.nextTurn(turn);
+				System.out.println("is a legal move: " + isLegalMove);
+				
+				WSBean bean = new WSBean("TURN", new Gson().toJson(this.matchState.getSquares()).toString());
+				session.getBasicRemote().sendText(new Gson().toJson(bean));
+				break;
+
+			default:
+				System.out.println("unknown WebSocket message received");
+				break;
 		}
+		// System.out.println(turn.getData());
+		// System.out.println("Player " + turn.getPlayerUID() + " sent move " + turn.getMove() + " into game " + gameID);
+		// users.put(turn.getPlayerUID(), session.getId());
+		// if (matchState.nextTurn(turn)) {
+		// 	broadcast(matchState);
+		// 	System.out.println("Move was legal. State updated.");
+		// 	if (matchState.isOver()) {
+		// 		try {
+		// 			System.out.println(matchState.getWinnerUID() + " won!");
+		// 		} finally {
+		// 			System.out.println("Game over! Removing...");
+		// 		}
+		// 		games.remove(gameID);
+		// 	}
+		// } else {
+		// 	System.out.println("Move was illegal! State was not updated.");
+		// }
 	}
 
 	@OnClose

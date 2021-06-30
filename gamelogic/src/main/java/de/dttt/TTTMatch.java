@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class TTTMatch {
 	private Square whoseTurn = Square.X, winner = null;
-	private HashMap<String, Square> squares;
+	private Square[][] squares;
 	private Boolean gameOver = false;
 	private String userX, userO, gameID;
 	private int moveCount = 0;
@@ -40,43 +40,71 @@ public class TTTMatch {
 		this.gameID = gameID;
 		this.userX = x;
 		this.userO = o;
-		squares = new HashMap<String, Square>(9, 1);
+		squares = new Square[3][3];
+		squares[0][0] = Square.EMPTY;
+		squares[0][1] = Square.EMPTY;
+		squares[0][2] = Square.EMPTY;
+		squares[1][0] = Square.EMPTY;
+		squares[1][1] = Square.EMPTY;
+		squares[1][2] = Square.EMPTY;
+		squares[2][0] = Square.EMPTY;
+		squares[2][1] = Square.EMPTY;
+		squares[2][2] = Square.EMPTY;
+
+		// squares = [[Square.EMPTY, Square.EMPTY, Square.EMPTY],
+		// 			[Square.EMPTY, Square.EMPTY, Square.EMPTY],
+		// 			[Square.EMPTY, Square.EMPTY, Square.EMPTY]];
 	}
 
 	public Boolean nextTurn(TicTacTurn turn) {
-		if (!turn.getMove().matches("[ABC][123]"))
-			return false;
+		// if (!turn.getMove().matches("[ABC][123]"))
+		// 	return false;
 		if (this.gameOver)
 			return false;
-		switch (whoseTurn) {
-			case X:
-				if (!turn.getPlayerUID().equals(userX)) {
-					return false;
-				}
-				break;
-			case O:
-				if (!turn.getPlayerUID().equals(userO)) {
-					return false;
-				}
-				break;
-			default:
-				return false;
-		}
-		if (squares.get(turn.getMove()) != null)
+		// switch (whoseTurn) {
+		// 	case X:
+		// 		if (!turn.getPlayerUID().equals(userX)) {
+		// 			return false;
+		// 		}
+		// 		break;
+		// 	case O:
+		// 		if (!turn.getPlayerUID().equals(userO)) {
+		// 			return false;
+		// 		}
+		// 		break;
+		// 	default:
+		// 		return false;
+		// }
+		if (squares[turn.getY()][turn.getX()] != Square.EMPTY) {
+			System.out.println("there is already a move on field: " + turn.getY() + " " + turn.getX());
 			return false;
-		else {
-			switch (whoseTurn) {
-				case X:
-					squares.put(turn.getMove(), Square.X);
+		} else {
+			switch(turn.getColor()) {
+				case 1:
+					squares[turn.getY()][turn.getX()] = Square.X;
 					moveCount++;
-					whoseTurn = Square.O;
 					break;
-				case O:
-					squares.put(turn.getMove(), Square.O);
+				case 2:
+					squares[turn.getY()][turn.getX()] = Square.O;
 					moveCount++;
-					whoseTurn = Square.X;
 					break;
+				default:
+					System.out.println("unknown player number");
+					break;
+
 			}
+			// switch (whoseTurn) {
+			// 	case X:
+			// 		squares.put(turn.getMove(), Square.X);
+			// 		moveCount++;
+			// 		whoseTurn = Square.O;
+			// 		break;
+			// 	case O:
+			// 		squares.put(turn.getMove(), Square.O);
+			// 		moveCount++;
+			// 		whoseTurn = Square.X;
+			// 		break;
+			// }
 			if (moveCount >= 5 && evaluate())
 				this.gameOver = true;
 			if (moveCount == 9)
@@ -88,43 +116,46 @@ public class TTTMatch {
 	public Boolean evaluate() {
 
 		// I'm a bit ashamed of this
-		if (squares.get("A1") != null && squares.get("A1") == squares.get("B1")
-				&& squares.get("B1") == squares.get("C1")) {
-			this.winner = squares.get("C1");
+		if (squares[0][0] != null && squares[0][0] == squares[1][0]
+				&& squares[1][0] == squares[2][0]) {
+			this.winner = squares[0][0];
 		}
-		if (squares.get("A2") != null && squares.get("A2") == squares.get("B2")
-				&& squares.get("B2") == squares.get("C2")) {
-			this.winner = squares.get("C2");
+		if (squares[0][1] != null && squares[0][1] == squares[1][1]
+				&& squares[1][1] == squares[2][1]) {
+			this.winner = squares[0][1];
 		}
-		if (squares.get("A3") != null && squares.get("A3") == squares.get("B3")
-				&& squares.get("B3") == squares.get("C3")) {
-			this.winner = squares.get("C3");
+		if (squares[0][2] != null && squares[0][2] == squares[1][2]
+				&& squares[1][2] == squares[2][2]) {
+			this.winner = squares[0][2];
 		}
-		if (squares.get("A1") != null && squares.get("A1") == squares.get("A2")
-				&& squares.get("A2") == squares.get("A3")) {
-			System.out.println(squares.get("A3"));
-			this.winner = squares.get("A3");
+		if (squares[0][0] != null && squares[0][0] == squares[0][1]
+				&& squares[0][1] == squares[0][2]) {
+			this.winner = squares[0][0];
 		}
-		if (squares.get("B1") != null && squares.get("B1") == squares.get("B2")
-				&& squares.get("B2") == squares.get("B3")) {
-			this.winner = squares.get("B3");
+		if (squares[1][0] != null && squares[1][0] == squares[1][1]
+				&& squares[1][1] == squares[1][2]) {
+			this.winner = squares[1][0];
 		}
-		if (squares.get("C1") != null && squares.get("C1") == squares.get("C2")
-				&& squares.get("C2") == squares.get("C3")) {
-			this.winner = squares.get("C3");
+		if (squares[2][0] != null && squares[2][0] == squares[2][1]
+				&& squares[2][1] == squares[2][2]) {
+			this.winner = squares[2][0];
 		}
-		if (squares.get("A1") != null && squares.get("A1") == squares.get("B2")
-				&& squares.get("B2") == squares.get("C3")) {
-			this.winner = squares.get("C3");
+		if (squares[0][0] != null && squares[0][0] == squares[1][1]
+				&& squares[1][1] == squares[2][2]) {
+			this.winner = squares[0][0];
 		}
-		if (squares.get("C1") != null && squares.get("C1") == squares.get("B2")
-				&& squares.get("B2") == squares.get("A3")) {
-			this.winner = squares.get("A3");
+		if (squares[0][2] != null && squares[0][2] == squares[1][1]
+				&& squares[1][1] == squares[2][0]) {
+			this.winner = squares[0][2];
 		}
 
 		if (this.winner != null)
 			return true;
 		else
 			return false;
+	}
+
+	public Square[][] getSquares() {
+		return squares;
 	}
 }

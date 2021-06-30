@@ -6,15 +6,16 @@ import javax.websocket.EndpointConfig;
 
 import com.google.gson.Gson;
 
-public class TurnDecoder implements Decoder.Text<TicTacTurn> {
+public class TurnDecoder implements Decoder.Text<WSBean> {
 
     private static Gson gson = new Gson();
 
     @Override
-    public TicTacTurn decode(String s) throws DecodeException {
+    public WSBean decode(String s) throws DecodeException {
+        System.out.println(s);
        // s = s.substring(1, s.length()-1).replace("\\\"", "\"");     //TODO: Removing Escape Characters as Workaround for testing, change later
-        TicTacTurn message = gson.fromJson(s, TicTacTurn.class);
-        return message;
+       WSBean message = gson.fromJson(s, WSBean.class);
+       return message;
     }
 
     @Override

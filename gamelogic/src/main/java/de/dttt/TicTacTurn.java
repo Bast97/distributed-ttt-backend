@@ -1,22 +1,26 @@
 package de.dttt;
 
 public class TicTacTurn {
-    private String player;
-    private String move;
+    private int x;
+    private int y;
+    private int color;
 
-    public TicTacTurn(String player, String move) {
+    public TicTacTurn(int x, int y, int color) {
         // Constructor is never called, validation is done before updating match
-        if (move.matches("[ABC][123]")) {
-            this.move = move;
-            this.player = player;
-        }
+        this.x = x;
+        this.y = y;
+        this.color = color;
     }
 
-    public String getPlayerUID() {
-        return player;
+    public int getX() {
+        return x;
     }
 
-    public String getMove() {
-        return move;
+    public int getY() {
+        return y;
+    }
+
+    public int getColor() {
+        return color;
     }
 }
