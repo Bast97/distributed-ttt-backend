@@ -131,7 +131,7 @@ public class TTTMatch {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				try {
-					switch (this.squares[i][j]) {
+					switch (this.squares[j][i]) {
 						case X:
 							stateArray[3 * i + j] = 1;
 							break;
