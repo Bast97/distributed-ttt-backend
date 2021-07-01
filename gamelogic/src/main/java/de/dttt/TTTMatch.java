@@ -5,7 +5,7 @@ import de.dttt.beans.WSTurn;
 
 public class TTTMatch {
 	private Square whoseTurn = Square.X, winner = null;
-	private Square[][] squares = { { null, null, null }, { null, null, null }, { null, null, null } };
+	private Square[][] squares = { { Square.EMPTY, Square.EMPTY, Square.EMPTY }, { Square.EMPTY, Square.EMPTY, Square.EMPTY }, { Square.EMPTY, Square.EMPTY, Square.EMPTY } };
 	private Boolean gameOver = false;
 	private String userX, userO, gameID;
 	private int moveCount = 0;
@@ -63,7 +63,7 @@ public class TTTMatch {
 			default:
 				return false;
 		}
-		if (squares[turn.getX()][turn.getY()] != null)
+		if (squares[turn.getX()][turn.getY()] != Square.EMPTY)
 			return false;
 		else {
 			switch (whoseTurn) {
@@ -89,28 +89,28 @@ public class TTTMatch {
 	public Boolean evaluate() {
 
 		// I'm a bit ashamed of this
-		if (squares[0][0] != null && squares[0][0] == squares[1][0] && squares[1][0] == squares[2][0]) {
+		if (squares[0][0] != Square.EMPTY && squares[0][0] == squares[1][0] && squares[1][0] == squares[2][0]) {
 			this.winner = squares[2][0];
 		}
-		if (squares[0][1] != null && squares[0][1] == squares[1][1] && squares[1][1] == squares[2][1]) {
+		if (squares[0][1] != Square.EMPTY && squares[0][1] == squares[1][1] && squares[1][1] == squares[2][1]) {
 			this.winner = squares[2][1];
 		}
-		if (squares[0][2] != null && squares[0][2] == squares[1][2] && squares[1][2] == squares[2][2]) {
+		if (squares[0][2] != Square.EMPTY && squares[0][2] == squares[1][2] && squares[1][2] == squares[2][2]) {
 			this.winner = squares[2][2];
 		}
-		if (squares[0][0] != null && squares[0][0] == squares[0][1] && squares[0][1] == squares[0][2]) {
+		if (squares[0][0] != Square.EMPTY && squares[0][0] == squares[0][1] && squares[0][1] == squares[0][2]) {
 			this.winner = squares[0][2];
 		}
-		if (squares[1][0] != null && squares[1][0] == squares[1][1] && squares[1][1] == squares[1][2]) {
+		if (squares[1][0] != Square.EMPTY && squares[1][0] == squares[1][1] && squares[1][1] == squares[1][2]) {
 			this.winner = squares[1][2];
 		}
-		if (squares[2][0] != null && squares[2][0] == squares[2][1] && squares[2][1] == squares[2][2]) {
+		if (squares[2][0] != Square.EMPTY && squares[2][0] == squares[2][1] && squares[2][1] == squares[2][2]) {
 			this.winner = squares[2][2];
 		}
-		if (squares[0][0] != null && squares[0][0] == squares[1][1] && squares[1][1] == squares[2][2]) {
+		if (squares[0][0] != Square.EMPTY && squares[0][0] == squares[1][1] && squares[1][1] == squares[2][2]) {
 			this.winner = squares[2][2];
 		}
-		if (squares[2][0] != null && squares[2][0] == squares[1][1] && squares[1][1] == squares[0][2]) {
+		if (squares[2][0] != Square.EMPTY && squares[2][0] == squares[1][1] && squares[1][1] == squares[0][2]) {
 			this.winner = squares[0][2];
 		}
 
