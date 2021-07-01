@@ -1,7 +1,6 @@
 package de.dttt;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -16,7 +15,6 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import de.dttt.beans.WSBean;
-import de.dttt.beans.WSHello;
 import de.dttt.beans.WSTurn;
 
 @ServerEndpoint(value = "/{gameID}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
@@ -25,7 +23,6 @@ public class GameEndpoint {
 	private TTTMatch matchState;
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
 	private static HashMap<String, TTTMatch> games = new HashMap<>();
-	private static HashMap<String, String> users = new HashMap<>(); // TODO:: Users are never removed
 
 	@OnOpen
 	public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
@@ -55,10 +52,6 @@ public class GameEndpoint {
 				WSTurn turn = new WSTurn(bean.getData());
 				handleTurn(turn, gameID);
 				break;
-			case "HELLO":
-				WSHello hello = new WSHello(bean.getData());
-				users.put(hello.getPlayerUID(), session.getId());
-				break;
 			default:
 				System.out.println("Unknown Message Type!");
 		}
@@ -67,7 +60,6 @@ public class GameEndpoint {
 	private void handleTurn(WSTurn turn, String gameID) {
 		System.out.println(
 				"Player " + turn.getPlayerUID() + " sent move " + turn.getX() + turn.getY() + " into game " + gameID);
-		users.put(turn.getPlayerUID(), session.getId());
 		if (matchState.nextTurn(turn)) {
 			broadcast(matchState);
 			System.out.println("Move was legal. State updated.");
@@ -97,13 +89,9 @@ public class GameEndpoint {
 
 	private void broadcast(TTTMatch message) {
 
-		ArrayList<String> participants = new ArrayList<>();
-		participants.add(users.get(this.matchState.getUserX()));
-		participants.add(users.get(this.matchState.getUserO()));
-
 		connections.forEach(endpoint -> {
 			synchronized (endpoint) {
-				if (participants.contains(endpoint.session.getId())) {
+				if (endpoint.matchState == message) {
 					try {
 						endpoint.session.getBasicRemote()
 								.sendText(new WSBean("GAMESTATE", message.toGameState().toJson()).toJson());
