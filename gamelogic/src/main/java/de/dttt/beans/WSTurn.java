@@ -2,7 +2,7 @@ package de.dttt.beans;
 
 import com.google.gson.Gson;
 
-public class WSTurn {
+public class WSTurn implements WSAbstractData {
     private int x;
     private int y;
     private int color;

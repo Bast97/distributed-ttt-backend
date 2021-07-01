@@ -2,7 +2,7 @@ package de.dttt.beans;
 
 import com.google.gson.Gson;
 
-public class WSMatchStart {
+public class WSMatchStart implements WSAbstractData {
     private int color;
     private boolean turn;
     private static Gson gson = new Gson();

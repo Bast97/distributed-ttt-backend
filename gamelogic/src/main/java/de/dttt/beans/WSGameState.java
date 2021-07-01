@@ -2,7 +2,7 @@ package de.dttt.beans;
 
 import com.google.gson.Gson;
 
-public class WSGameState {
+public class WSGameState implements WSAbstractData {
     private int[] gamestate;
     private static Gson gson = new Gson();
 
@@ -21,5 +21,9 @@ public class WSGameState {
 
     public void setGamestate(int[] gamestate) {
         this.gamestate = gamestate;
+    }
+
+    public String toJson() {
+        return "";
     }
 }

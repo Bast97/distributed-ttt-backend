@@ -1,5 +1,11 @@
 package de.dttt.beans;
 
-public class WSGameOver {
-    
+import com.google.gson.Gson;
+
+public class WSGameOver implements WSAbstractData {
+    private static Gson gson = new Gson();
+
+    public String toJson() {
+        return gson.toJson(this);
+    }
 }
