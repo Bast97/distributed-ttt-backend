@@ -10,8 +10,22 @@ public class TTTMatch {
 	private String userX, userO, gameID;
 	private int moveCount = 0;
 
+	public TTTMatch(String gameID, String x, String o) {
+		this.gameID = gameID;
+		this.userX = x;
+		this.userO = o;
+	}
+
+	public TTTMatch(String gameID, String x){
+		this(gameID, x, "");
+	}
+
 	public String getUserX() {
 		return userX;
+	}
+
+	public void setUserO(String userO) {
+		this.userO = userO;
 	}
 
 	public String getUserO() {
@@ -35,12 +49,6 @@ public class TTTMatch {
 			default:
 				return null;
 		}
-	}
-
-	public TTTMatch(String gameID, String x, String o) {
-		this.gameID = gameID;
-		this.userX = x;
-		this.userO = o;
 	}
 
 	public Boolean nextTurn(WSTurn turn) {
