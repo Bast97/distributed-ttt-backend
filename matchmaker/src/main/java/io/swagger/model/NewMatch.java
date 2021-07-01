@@ -12,36 +12,55 @@ import javax.validation.constraints.*;
  * NewMatch
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-06-17T12:52:16.300Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-07-01T12:16:14.800Z[GMT]")
 
 
 public class NewMatch   {
-  @JsonProperty("id")
-  private Long id = null;
+  @JsonProperty("matchId")
+  private String matchId = null;
 
-  @JsonProperty("player_num")
+  @JsonProperty("playerId")
+  private String playerId = null;
+
+  @JsonProperty("playerNum")
   private Integer playerNum = null;
 
-  @JsonProperty("color")
-  private String color = null;
-
-  public NewMatch id(Long id) {
-    this.id = id;
+  public NewMatch matchId(String matchId) {
+    this.matchId = matchId;
     return this;
   }
 
   /**
-   * Get id
-   * @return id
+   * Get matchId
+   * @return matchId
    **/
   @Schema(description = "")
   
-    public Long getId() {
-    return id;
+    public String getMatchId() {
+    return matchId;
   }
 
-  public void setId(Long id) {
-    this.id = id;
+  public void setMatchId(String matchId) {
+    this.matchId = matchId;
+  }
+
+  public NewMatch playerId(String playerId) {
+    this.playerId = playerId;
+    return this;
+  }
+
+  /**
+   * Get playerId
+   * @return playerId
+   **/
+  @Schema(description = "")
+  
+    public String getPlayerId() {
+    return playerId;
+  }
+
+  public void setPlayerId(String playerId) {
+    this.playerId = playerId;
   }
 
   public NewMatch playerNum(Integer playerNum) {
@@ -63,25 +82,6 @@ public class NewMatch   {
     this.playerNum = playerNum;
   }
 
-  public NewMatch color(String color) {
-    this.color = color;
-    return this;
-  }
-
-  /**
-   * Get color
-   * @return color
-   **/
-  @Schema(description = "")
-  
-    public String getColor() {
-    return color;
-  }
-
-  public void setColor(String color) {
-    this.color = color;
-  }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -92,14 +92,14 @@ public class NewMatch   {
       return false;
     }
     NewMatch newMatch = (NewMatch) o;
-    return Objects.equals(this.id, newMatch.id) &&
-        Objects.equals(this.playerNum, newMatch.playerNum) &&
-        Objects.equals(this.color, newMatch.color);
+    return Objects.equals(this.matchId, newMatch.matchId) &&
+        Objects.equals(this.playerId, newMatch.playerId) &&
+        Objects.equals(this.playerNum, newMatch.playerNum);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, playerNum, color);
+    return Objects.hash(matchId, playerId, playerNum);
   }
 
   @Override
@@ -107,9 +107,9 @@ public class NewMatch   {
     StringBuilder sb = new StringBuilder();
     sb.append("class NewMatch {\n");
     
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    matchId: ").append(toIndentedString(matchId)).append("\n");
+    sb.append("    playerId: ").append(toIndentedString(playerId)).append("\n");
     sb.append("    playerNum: ").append(toIndentedString(playerNum)).append("\n");
-    sb.append("    color: ").append(toIndentedString(color)).append("\n");
     sb.append("}");
     return sb.toString();
   }
