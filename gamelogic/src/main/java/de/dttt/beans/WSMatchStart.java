@@ -14,8 +14,8 @@ public class WSMatchStart implements WSAbstractData {
 
     public WSMatchStart(String json) {
         WSMatchStart generated = gson.fromJson(json, WSMatchStart.class);
-        this.color = generated.color;
-        this.turn = generated.turn;
+        this.color = generated.getColor();
+        this.turn = generated.isTurn();
     }
 
     public String toJson() {

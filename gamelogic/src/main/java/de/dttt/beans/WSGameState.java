@@ -12,7 +12,7 @@ public class WSGameState implements WSAbstractData {
 
     public WSGameState(String json) {
         WSGameState generated = gson.fromJson(json, WSGameState.class);
-        this.gamestate = generated.gamestate;
+        this.gamestate = generated.getGamestate();
     }
 
     public int[] getGamestate() {

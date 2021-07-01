@@ -16,9 +16,9 @@ public class WSTurn implements WSAbstractData {
 
     public WSTurn(String json) {
         WSTurn generated = gson.fromJson(json, WSTurn.class);
-        this.x = generated.x;
-        this.y = generated.y;
-        this.color = generated.color;
+        this.x = generated.getX();
+        this.y = generated.getY();
+        this.color = generated.getColor();
     }
 
     public String toJson() {
