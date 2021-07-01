@@ -24,6 +24,6 @@ public class WSGameState implements WSAbstractData {
     }
 
     public String toJson() {
-        return "";
+        return gson.toJson(this);
     }
 }

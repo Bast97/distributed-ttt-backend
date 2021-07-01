@@ -82,6 +82,7 @@ public class GameEndpoint {
 		int[] gamestate = {1,1,2,0,0,0,0,0,0};
 		WSGameState dataBean = new WSGameState(gamestate);
 		try {
+			System.out.println(new WSBean(WSBean.TURN, dataBean).toJson());
 			session.getBasicRemote().sendText(new WSBean(WSBean.TURN, dataBean).toJson());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
