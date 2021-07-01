@@ -34,6 +34,7 @@ public class GameEndpoint {
 
 		if (games.containsKey(gameID)) {
 			this.matchState = games.get(gameID);
+			broadcast(matchState);
 		} else if (true) { // TODO: Call Matchmaker for Match Details here
 			TTTMatch newMatch = new TTTMatch(gameID, "123", "456");
 			games.put(gameID, newMatch);
@@ -94,8 +95,8 @@ public class GameEndpoint {
 				if (endpoint.matchState == message) {
 					try {
 						endpoint.session.getBasicRemote()
-								.sendText(new WSBean(WSBean.TURN, message.toGameState()).toJson());
-					} catch (IOException e) {
+								.sendObject(new WSBean(WSBean.TURN, message.toGameState()));
+					} catch (IOException | EncodeException e) {
 						e.printStackTrace();
 					}
 				}
