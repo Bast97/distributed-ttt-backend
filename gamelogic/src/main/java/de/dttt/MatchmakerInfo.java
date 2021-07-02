@@ -17,7 +17,9 @@ public class MatchmakerInfo {
 		URL url;
 		Gson gson = new Gson();
 		try {
-			url = new URL("http://feuerberg:8080/matchinfo/" + gid);
+			String baseurl = System.getenv("MATCHMAKER_HOST");
+			String port = System.getenv("MATCHMAKER_PORT");
+			url = new URL("http://" + baseurl + ":" + port + "/matchinfo/" + gid);
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("GET");
 			int status = con.getResponseCode();
