@@ -14,15 +14,29 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import de.dttt.redis.RedisConfig;
+import de.dttt.redis.MessagePublisher;
+import de.dttt.redis.RedisMessagePublisher;
+import de.dttt.redis.repo.MatchRepository;
+import de.dttt.redis.Match;
 import de.dttt.beans.WSBean;
 import de.dttt.beans.WSTurn;
 
 @ServerEndpoint(value = "/{gameID}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
+@ContextConfiguration(classes = RedisConfig.class)
 public class GameEndpoint {
 	private Session session;
 	private TTTMatch matchState;
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
 	private static HashMap<String, TTTMatch> games = new HashMap<>();
+	
+    @Autowired(required = true)
+    private MatchRepository matchRepository;
+    @Autowired
+    private MessagePublisher redisMessagePublisher;
 
 	@OnOpen
 	public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
@@ -65,6 +79,16 @@ public class GameEndpoint {
 		System.out.println(
 				"Player " + turn.getUid() + " sent move " + turn.getX() + turn.getY() + " into game " + gameID);
 		if (matchState.nextTurn(turn)) {
+			// int[] gamestate = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+			int gamestate = 1;
+			System.out.println("about to save");
+			Match match = new Match(gameID, "player1id", "player2id", gamestate);
+			try {
+				matchRepository.save(match);
+				System.out.println("saved succesfully");
+			} catch (Exception e) {
+				System.out.println(e.toString());
+			}
 			broadcast(matchState);
 			System.out.println("Move was legal. State updated.");
 			if (matchState.isOver()) {
