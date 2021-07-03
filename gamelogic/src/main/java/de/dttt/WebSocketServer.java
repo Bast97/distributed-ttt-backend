@@ -1,14 +1,14 @@
 package de.dttt;
 
 import org.glassfish.tyrus.server.Server;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+// import org.springframework.boot.SpringApplication;
+// import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+// @SpringBootApplication
 public class WebSocketServer {
 
     public static void main(String[] args) {
-        SpringApplication.run(WebSocketServer.class, args);
+        // SpringApplication.run(WebSocketServer.class, args);
         runServer();
     }
 

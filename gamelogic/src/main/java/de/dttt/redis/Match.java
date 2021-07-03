@@ -5,15 +5,17 @@ import java.io.Serializable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
+import de.dttt.TTTMatch;
+
 @RedisHash("Match")
 public class Match implements Serializable {
 
     @Id private String matchId;
     private String player1Id;
     private String player2Id;
-    private int gamestate;
+    private TTTMatch gamestate;
 
-    public Match(String matchId, String player1Id, String player2Id, int gamestate) {
+    public Match(String matchId, String player1Id, String player2Id, TTTMatch gamestate) {
         this.matchId = matchId;
         this.player1Id = player1Id;
         this.player2Id = player2Id;
@@ -44,11 +46,11 @@ public class Match implements Serializable {
         this.player2Id = player2Id;
     }
 
-    public int getGamestate() {
+    public TTTMatch getGamestate() {
         return gamestate;
     }
 
-    public void setGamestate(int gamestate) {
+    public void setGamestate(TTTMatch gamestate) {
         this.gamestate = gamestate;
     }
 
