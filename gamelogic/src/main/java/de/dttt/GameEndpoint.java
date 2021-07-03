@@ -23,6 +23,7 @@ import de.dttt.beans.WSTurn;
 public class GameEndpoint {
 	private Session session;
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
+	private String gameID;
 	
 	Jedis jedis = new Jedis("35.204.146.65", 6379);
 	Gson gson = new Gson();
@@ -48,13 +49,13 @@ public class GameEndpoint {
 			match.setUserO(mmInfo.getO());
 			json = gson.toJson(match);
 			jedis.set(gameID, json);
-			
+			this.gameID = gameID;
 			broadcast(match);
-			// broadcast(matchState);
 		} else if (mmInfo.isValid()) { // I think this runs when player 1 joins
 			TTTMatch newMatch = new TTTMatch(gameID, mmInfo.getX());			
 			String json = gson.toJson(newMatch);
 			jedis.set(gameID, json);
+			this.gameID = gameID;
 			System.out.println("New Match was created");
 		}
 
@@ -119,16 +120,16 @@ public class GameEndpoint {
 
 		System.out.println("broadcast to: ");
 		connections.forEach(endpoint -> {
-			System.out.println(endpoint);
 			synchronized (endpoint) {
-				// if (endpoint.matchState == message) {
+				if (endpoint.gameID.equals(message.getGameID())) {
+					System.out.println(endpoint);
 					try {
 						endpoint.session.getBasicRemote()
 								.sendObject(new WSBean(WSBean.TURN, message.toGameState()));
 					} catch (IOException | EncodeException e) {
 						e.printStackTrace();
 					}
-				// }
+				}
 			}
 		});
 	}
