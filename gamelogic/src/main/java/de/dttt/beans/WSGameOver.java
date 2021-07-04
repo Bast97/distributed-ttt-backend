@@ -3,38 +3,28 @@ package de.dttt.beans;
 import com.google.gson.Gson;
 
 public class WSGameOver implements WSAbstractData {
-    private boolean victory;
-    private boolean tie;
+    private int winner;
     private static Gson gson = new Gson();
 
-    public WSGameOver(boolean victory, boolean tie) {
-        this.victory = victory;
-        this.tie = tie;
+    public WSGameOver(int winner) {
+        this.winner = winner;
     }
 
     public WSGameOver(String json) {
         WSGameOver generated = gson.fromJson(json, WSGameOver.class);
-        this.victory = generated.isVictory();
-        this.tie = generated.isTie();
+        this.winner = generated.getWinner();
+    }
+
+    public int getWinner() {
+        return winner;
+    }
+
+    public void setWinner(int winner) {
+        this.winner = winner;
     }
 
     public String toJson() {
         return gson.toJson(this);
     }
 
-    public boolean isVictory() {
-        return victory;
-    }
-
-    public void setVictory(boolean victory) {
-        this.victory = victory;
-    }
-
-    public boolean isTie() {
-        return tie;
-    }
-
-    public void setTie(boolean tie) {
-        this.tie = tie;
-    }
 }

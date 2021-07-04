@@ -25,7 +25,7 @@ public class GameEndpoint {
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
 	private String gameID;
 	
-	Jedis jedis = new Jedis("35.204.146.65", 6379);
+	Jedis jedis = new Jedis("34.147.8.72", 6379);
 	Gson gson = new Gson();
 	
     Jedis mjedis = null;
@@ -50,7 +50,7 @@ public class GameEndpoint {
 			json = gson.toJson(match);
 			jedis.set(gameID, json);
 			this.gameID = gameID;
-			broadcast(match);
+			broadcast(WSBean.TURN, match);
 		} else if (mmInfo.isValid()) { // I think this runs when player 1 joins
 			TTTMatch newMatch = new TTTMatch(gameID, mmInfo.getX());			
 			String json = gson.toJson(newMatch);
@@ -87,12 +87,13 @@ public class GameEndpoint {
 				json = gson.toJson(match);
 				jedis.set(gameID, json);
 
-				broadcast(match);
+				broadcast(WSBean.TURN, match);
 				System.out.println("Move was legal. State updated.");
 				if (match.isOver()) {
 					try {
 						System.out.println(match.getWinnerUID() + " won!");
 					} finally {
+						broadcast(WSBean.GAME_OVER, match);
 						System.out.println("Game over! Removing...");
 					}
 				}
@@ -116,7 +117,7 @@ public class GameEndpoint {
 		// Do error handling here
 	}
 
-	private void broadcast(TTTMatch message) {
+	private void broadcast(String beantype, TTTMatch message) {
 
 		System.out.println("broadcast to: ");
 		connections.forEach(endpoint -> {
@@ -124,8 +125,19 @@ public class GameEndpoint {
 				if (endpoint.gameID.equals(message.getGameID())) {
 					System.out.println(endpoint);
 					try {
-						endpoint.session.getBasicRemote()
-								.sendObject(new WSBean(WSBean.TURN, message.toGameState()));
+						switch (beantype) {
+							case WSBean.TURN:
+								endpoint.session.getBasicRemote()
+										.sendObject(new WSBean(beantype, message.toGameState()));
+								break;
+							case WSBean.GAME_OVER:
+								endpoint.session.getBasicRemote()
+										.sendObject(new WSBean(beantype, message.toGameOver()));
+								break;
+						
+							default:
+								break;
+						}
 					} catch (IOException | EncodeException e) {
 						e.printStackTrace();
 					}

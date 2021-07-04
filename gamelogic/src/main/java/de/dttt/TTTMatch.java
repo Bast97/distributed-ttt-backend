@@ -1,5 +1,6 @@
 package de.dttt;
 
+import de.dttt.beans.WSGameOver;
 import de.dttt.beans.WSGameState;
 import de.dttt.beans.WSTurn;
 
@@ -156,5 +157,18 @@ public class TTTMatch {
 			}
 		}
 		return new WSGameState(stateArray, whoseTurn);
+	}
+
+	public WSGameOver toGameOver() {
+		int winnerInt = 0;
+		if (winner == Square.X) {
+			winnerInt = 1;
+		} else if (winner == Square.O) {
+			winnerInt = 2;
+		} else {
+			winnerInt = 0;
+		}
+			
+		return new WSGameOver(winnerInt);
 	}
 }
