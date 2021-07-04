@@ -6,6 +6,9 @@ Run with ```mvn spring-boot:run``` and open ```localhost:8080```.
 ## Gameserver
 Run with ```mvn compile``` and ```mvn exec:java -Dexec.mainClass=de.dttt.WebSocketServer```, then also run frontend with ```ng serve```, open ```localhost:4200``` and connect to a Websocket like ```ws://localhost:8765/game/{gameID}```.
 
+## Start redis server
+Copy /redis-server/docker-compose.yaml to a VM and run ```sudo docker-compose up -d```.
+
 ## Run containerised
 
 The gameserver container expects a matchmaker container named "matchmaker" on the same docker network running on port 8080. If the matchmaker server is located somewhere else, pass the MATCHMAKER_HOST and MATCHMAKER_PORT environment variables to the container.
