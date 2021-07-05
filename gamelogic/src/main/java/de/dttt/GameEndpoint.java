@@ -21,7 +21,7 @@ import de.dttt.beans.WSBean;
 import de.dttt.beans.WSTurn;
 
 @Component
-@ServerEndpoint(value = "/{gameID}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
+@ServerEndpoint(value = "/game/{gameID}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
 public class GameEndpoint {
 	private Session session;
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
