@@ -38,8 +38,11 @@ public class MatchmakerInfo {
 				this.player1Id = generated.getX();
 				this.player2Id = generated.getO();
 			}
+			else{
+				System.out.println("Matchmaker not responding correctly!");
+			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Error establishing connection with matchmaker!");
 			e.printStackTrace();
 		}
 	}
