@@ -46,8 +46,8 @@ public class GameEndpoint {
 	public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
 		
 		// JedisPool config
-		config.setMaxTotal(100); // Set the maximum number of connections
-		config.setMaxIdle(10); // Set the maximum number of idle connections
+		config.setMaxTotal(1000); // Set the maximum number of connections
+		config.setMaxIdle(999); // Set the maximum number of idle connections
 
 		this.session = session;
 		connections.add(this);
@@ -84,8 +84,8 @@ public class GameEndpoint {
 
 	public void subscribeJedis(GameEndpoint endpoint, String channel_name) {
 		new Thread() {
-			Jedis jedis = jedisPool.getResource();
 			public void run(){
+				Jedis jedis = jedisPool.getResource();
 				try {
 					jedis.subscribe(new JedisPubSub() {
 						@Override
@@ -181,7 +181,8 @@ public class GameEndpoint {
 
 	@OnError
 	public void onError(Session session, Throwable throwable) {
-		// Do error handling here
+		System.out.println("Backend Error!");
+		System.out.println(throwable.toString());
 	}
 
 	private void broadcast(String beantype, TTTMatch message) {
