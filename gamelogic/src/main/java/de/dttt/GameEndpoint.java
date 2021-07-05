@@ -1,7 +1,6 @@
 package de.dttt;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -29,8 +28,6 @@ public class GameEndpoint {
 	String redis_port = System.getenv("REDIS_PORT");
 	Jedis jedis = new Jedis(redis_host, Integer.parseInt(redis_port));
 	Gson gson = new Gson();
-	
-    Jedis mjedis = null;
 	
 
 	@OnOpen
@@ -96,6 +93,7 @@ public class GameEndpoint {
 						System.out.println(match.getWinnerUID() + " won!");
 					} finally {
 						broadcast(WSBean.GAME_OVER, match);
+						jedis.del(gameID);
 						System.out.println("Game over! Removing...");
 					}
 				}
