@@ -1,7 +1,6 @@
 package de.dttt;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -16,6 +15,9 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.google.gson.Gson;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisPubSub;
 import de.dttt.beans.WSBean;
 import de.dttt.beans.WSTurn;
 
@@ -25,14 +27,17 @@ public class GameEndpoint {
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
 	private String gameID;
 	
-	Jedis jedis = new Jedis("34.147.8.72", 6379);
+	JedisPoolConfig config = new JedisPoolConfig();
+	JedisPool jedisPool = new JedisPool(config, "34.147.124.24", 6379);
+	Jedis jedis = null;
 	Gson gson = new Gson();
 	
-    Jedis mjedis = null;
-	
-
 	@OnOpen
 	public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
+		
+		// JedisPool config
+		config.setMaxTotal(100); // Set the maximum number of connections
+		config.setMaxIdle(10); // Set the maximum number of idle connections
 
 		this.session = session;
 		connections.add(this);
@@ -41,25 +46,74 @@ public class GameEndpoint {
 
 		MatchmakerInfo mmInfo = new MatchmakerInfo(gameID);
 
-
-
-		if (jedis.exists(gameID)) { // I think this runs when player 2 joins
-			String json = jedis.get(gameID);
-			TTTMatch match = gson.fromJson(json, TTTMatch.class);
-			match.setUserO(mmInfo.getO());
-			json = gson.toJson(match);
-			jedis.set(gameID, json);
-			this.gameID = gameID;
-			broadcast(WSBean.TURN, match);
-		} else if (mmInfo.isValid()) { // I think this runs when player 1 joins
-			TTTMatch newMatch = new TTTMatch(gameID, mmInfo.getX());			
-			String json = gson.toJson(newMatch);
-			jedis.set(gameID, json);
-			this.gameID = gameID;
-			System.out.println("New Match was created");
+		jedis = jedisPool.getResource();
+		try {
+			if (jedis.exists(gameID)) { // I think this runs when player 2 joins
+				String json = jedis.get(gameID);
+				TTTMatch match = gson.fromJson(json, TTTMatch.class);
+				match.setUserO(mmInfo.getO());
+				json = gson.toJson(match);
+				jedis.set(gameID, json);
+				this.gameID = gameID;
+				jedis.publish(gameID, WSBean.TURN);
+			} else if (mmInfo.isValid()) { // I think this runs when player 1 joins
+				TTTMatch newMatch = new TTTMatch(gameID, mmInfo.getX());			
+				String json = gson.toJson(newMatch);
+				jedis.set(gameID, json);
+				this.gameID = gameID;
+				System.out.println("New Match was created: " + gameID);
+			}
+		} finally {
+			if(jedis != null)
+				jedis.close();
 		}
 
+		subscribeJedis(this, gameID);
+		
 	}
+
+	public void subscribeJedis(GameEndpoint endpoint, String channel_name) {
+		new Thread() {
+			Jedis jedis = jedisPool.getResource();
+			public void run(){
+				try {
+					jedis.subscribe(new JedisPubSub() {
+						@Override
+						public void onMessage(String channel, String message) {
+							endpoint.onJedisPublish(channel, message);
+						}
+					}, channel_name);
+				} finally {
+					if(jedis != null)
+						jedis.close();
+				}
+			}
+		}.start();
+	}
+
+	// handle a new message from Redis
+	public void onJedisPublish(String channel, String message) {
+		jedis = jedisPool.getResource();
+		try {
+			String json = jedis.get(this.gameID);
+			TTTMatch match = gson.fromJson(json, TTTMatch.class);
+
+			switch (message) {
+				case "TURN":
+					broadcast(WSBean.TURN, match);
+					break;
+				case "GAMEOVER":
+					broadcast(WSBean.GAME_OVER, match);
+					break;
+				default:
+					System.out.println("Unknown Message Type!");
+			}
+		} finally {
+			if(jedis != null)
+				jedis.close();
+		}
+	}
+
 
 	@OnMessage
 	public void onMessage(Session session, @PathParam("gameID") String gameID, WSBean bean)
@@ -76,32 +130,36 @@ public class GameEndpoint {
 	}
 
 	private void handleTurn(WSTurn turn, String gameID) {
-		System.out.println(
-				"Player " + turn.getUid() + " sent move " + turn.getX() + turn.getY() + " into game " + gameID);
+		System.out.println("Player " + turn.getUid() + " sent move " + turn.getX() + turn.getY() + " into game " + gameID);
 
-		if(jedis.exists(gameID)) {
-			String json = jedis.get(gameID);
-			System.out.println(json);
-			TTTMatch match = gson.fromJson(json, TTTMatch.class);
-			if(match.nextTurn(turn)) {
-				json = gson.toJson(match);
-				jedis.set(gameID, json);
+		jedis = jedisPool.getResource();
+		try {
+			if(jedis.exists(gameID)) {
+				String json = jedis.get(gameID);
+				TTTMatch match = gson.fromJson(json, TTTMatch.class);
+				if(match.nextTurn(turn)) {
+					json = gson.toJson(match);
+					jedis.set(gameID, json);
+					jedis.publish(gameID, WSBean.TURN);
 
-				broadcast(WSBean.TURN, match);
-				System.out.println("Move was legal. State updated.");
-				if (match.isOver()) {
-					try {
-						System.out.println(match.getWinnerUID() + " won!");
-					} finally {
-						broadcast(WSBean.GAME_OVER, match);
-						System.out.println("Game over! Removing...");
+					if (match.isOver()) {
+						try {
+							System.out.println(match.getWinnerUID() + " won!");
+						} finally {
+							jedis.publish(gameID, WSBean.GAME_OVER);
+							System.out.println("Game over! Removing...");
+							// jedis.del(gameID);
+						}
 					}
+				} else {
+					System.out.println("Move was illegal! State was not updated.");
 				}
 			} else {
-				System.out.println("Move was illegal! State was not updated.");
-			}
-		} else {
 
+			}
+		} finally {
+			if(jedis != null)
+				jedis.close();
 		}
 
 	}
@@ -109,7 +167,6 @@ public class GameEndpoint {
 	@OnClose
 	public void onClose(Session session) throws IOException, EncodeException {
 		connections.remove(this);
-		System.out.println("Socket disconnected: " + session.getId());
 	}
 
 	@OnError
@@ -119,11 +176,9 @@ public class GameEndpoint {
 
 	private void broadcast(String beantype, TTTMatch message) {
 
-		System.out.println("broadcast to: ");
 		connections.forEach(endpoint -> {
 			synchronized (endpoint) {
 				if (endpoint.gameID.equals(message.getGameID())) {
-					System.out.println(endpoint);
 					try {
 						switch (beantype) {
 							case WSBean.TURN:
