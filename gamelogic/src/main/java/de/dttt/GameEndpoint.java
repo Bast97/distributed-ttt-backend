@@ -27,11 +27,14 @@ public class GameEndpoint {
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
 	private String gameID;
 	
+	String redis_host = System.getenv("REDIS_HOST");
+	String redis_port = System.getenv("REDIS_PORT");
 	JedisPoolConfig config = new JedisPoolConfig();
-	JedisPool jedisPool = new JedisPool(config, "34.147.124.24", 6379);
+	JedisPool jedisPool = new JedisPool(config, redis_host, Integer.parseInt(redis_port));
 	Jedis jedis = null;
 	Gson gson = new Gson();
 	
+
 	@OnOpen
 	public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
 		
@@ -130,7 +133,7 @@ public class GameEndpoint {
 	}
 
 	private void handleTurn(WSTurn turn, String gameID) {
-		System.out.println("Player " + turn.getUid() + " sent move " + turn.getX() + turn.getY() + " into game " + gameID);
+		// System.out.println("Player " + turn.getUid() + " sent move " + turn.getX() + turn.getY() + " into game " + gameID);
 
 		jedis = jedisPool.getResource();
 		try {
