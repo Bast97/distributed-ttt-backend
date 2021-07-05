@@ -27,13 +27,17 @@ public class GameEndpoint {
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
 	private String gameID;
 	
-	String redis_host = System.getenv("REDIS_HOST");
-	String redis_port = System.getenv("REDIS_PORT");
-	JedisPoolConfig config = new JedisPoolConfig();
-	JedisPool jedisPool = new JedisPool(config, redis_host, Integer.parseInt(redis_port));
+	JedisPoolConfig config;
+	JedisPool jedisPool;
 	Jedis jedis = null;
 	Gson gson = new Gson();
 	
+	public GameEndpoint() {
+		String redis_host = System.getenv("REDIS_HOST");
+		String redis_port = System.getenv("REDIS_PORT");
+		config = new JedisPoolConfig();
+		jedisPool = new JedisPool(config, redis_host, Integer.parseInt(redis_port));
+	}
 
 	@OnOpen
 	public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
