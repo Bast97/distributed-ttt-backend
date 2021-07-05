@@ -13,6 +13,8 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+import org.springframework.stereotype.Component;
+
 import com.google.gson.Gson;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -21,7 +23,8 @@ import redis.clients.jedis.JedisPubSub;
 import de.dttt.beans.WSBean;
 import de.dttt.beans.WSTurn;
 
-@ServerEndpoint(value = "/{gameID}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
+@Component
+@ServerEndpoint(value = "/game/{gameID}", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
 public class GameEndpoint {
 	private Session session;
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
