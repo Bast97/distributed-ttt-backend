@@ -54,19 +54,13 @@ public class MatchinfoApiController implements MatchinfoApi {
 
     public ResponseEntity<MatchInfo> getMatchInfoUsingGET(@Parameter(in = ParameterIn.PATH, description = "ID of the match to get", required=true, schema=@Schema()) @PathVariable("matchId") String matchId) {
         String accept = request.getHeader("Accept");
-        // if (accept != null && accept.contains("application/json")) {
             try {
                 MatchInfo matchInfo = this.matchmaker.getMatchInfoForMatchId(matchId);
-                System.out.println("now responding with match info");
                 return new ResponseEntity<MatchInfo>(matchInfo, HttpStatus.OK);
-                // return new ResponseEntity<MatchInfo>(objectMapper.readValue("{\n  \"player1Id\" : \"player1Id\",\n  \"matchIdIsValid\" : true,\n  \"player2Id\" : \"player2Id\"\n}", MatchInfo.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<MatchInfo>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        // }
-
-        // return new ResponseEntity<MatchInfo>(HttpStatus.NOT_IMPLEMENTED);
     }
 
 }

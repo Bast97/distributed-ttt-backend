@@ -59,24 +59,17 @@ public class NewmatchApiController implements NewmatchApi {
 
     public ResponseEntity<NewMatch> getNewMatchUsingGET() {
         String accept = request.getHeader("Accept");
-        // if (accept != null && accept.contains("application/json")) {
             try {
                 
                 String userId = "u" + UUID.randomUUID().toString();
-                System.out.println("new user: " + userId);
 
                 NewMatch match = this.matchmaker.joinMatch(userId);
-
-                System.out.println("num of matches: " + this.matchmaker.getNumberOfMatches());
                 
                 return new ResponseEntity<NewMatch>(match, HttpStatus.OK);
             } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<NewMatch>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        // }
-
-        // return new ResponseEntity<NewMatch>(HttpStatus.NOT_IMPLEMENTED);
     }
 
 }
