@@ -25,7 +25,9 @@ public class GameEndpoint {
 	private static final Set<GameEndpoint> connections = new CopyOnWriteArraySet<>();
 	private String gameID;
 	
-	Jedis jedis = new Jedis("34.147.8.72", 6379);
+	String redis_host = System.getenv("REDIS_HOST");
+	String redis_port = System.getenv("REDIS_PORT");
+	Jedis jedis = new Jedis(redis_host, Integer.parseInt(redis_port));
 	Gson gson = new Gson();
 	
     Jedis mjedis = null;
