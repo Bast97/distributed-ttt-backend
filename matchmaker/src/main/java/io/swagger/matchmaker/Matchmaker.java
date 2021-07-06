@@ -22,6 +22,15 @@ public class Matchmaker {
         return matches.size();
     }
 
+    public void deleteMatch(String matchId) {
+        for (int i = 0; i < matches.size(); i++)  {
+            if(matches.get(i).getMatchId().equals(matchId)) {
+                matches.remove(i);
+                return;
+            }
+        }
+    }
+
     public NewMatch joinMatch(String userId) {
         for (int i = 0; i < matches.size(); i++)  {
             if (matches.get(i).getPlayerCount() == 1) {
@@ -39,6 +48,7 @@ public class Matchmaker {
         }
 
         String matchId = "m" + UUID.randomUUID().toString();
+        System.out.println("new match: " + matchId);
         Match match = new Match();
         match.setMatchId(matchId);
         match.setPlayerCount(1);
