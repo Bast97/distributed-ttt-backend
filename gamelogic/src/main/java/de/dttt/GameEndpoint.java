@@ -49,6 +49,9 @@ public class GameEndpoint {
 		config.setMaxTotal(1000); // Set the maximum number of connections
 		config.setMaxIdle(999); // Set the maximum number of idle connections
 
+		// Set timeout time to 5 minutes
+		session.setMaxIdleTimeout(300000);
+
 		this.session = session;
 		connections.add(this);
 
@@ -79,7 +82,6 @@ public class GameEndpoint {
 		}
 
 		subscribeJedis(this, gameID);
-		
 	}
 
 	public void subscribeJedis(GameEndpoint endpoint, String channel_name) {
