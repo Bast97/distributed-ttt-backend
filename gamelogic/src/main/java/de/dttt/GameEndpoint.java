@@ -42,8 +42,8 @@ public class GameEndpoint {
 		redis_port = System.getenv("REDIS_PORT");
 		config = new JedisPoolConfig();
 		// JedisPool config
-		config.setMaxTotal(1000); // Set the maximum number of connections
-		config.setMaxIdle(999); // Set the maximum number of idle connections
+		config.setMaxTotal(10000); // Set the maximum number of connections
+		config.setMaxIdle(10000); // Set the maximum number of idle connections
 
 		jedisPool = new JedisPool(config, redis_host, Integer.parseInt(redis_port));
 	}
