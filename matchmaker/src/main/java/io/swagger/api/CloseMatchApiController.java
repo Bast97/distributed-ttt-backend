@@ -55,6 +55,7 @@ public class CloseMatchApiController implements CloseMatchApi {
     public ResponseEntity<String> closeMatchUsingPOST(@Parameter(in = ParameterIn.PATH, description = "ID of the match to get", required=true, schema=@Schema()) @PathVariable("matchId") String matchId) {
             try {
                 this.matchmaker.deleteMatch(matchId);
+                System.out.println("closed a match");
                 String returnString = "{\"closedMatch\": \""+matchId+"\"}";
                 return new ResponseEntity<String>(returnString, HttpStatus.OK);
             } catch (Exception e) {
