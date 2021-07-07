@@ -31,24 +31,26 @@ public class GameEndpoint {
 	private String gameID;
 	
 	JedisPoolConfig config;
-	JedisPool jedisPool;
-	Jedis jedis = null;
+	static JedisPool jedisPool;
 	Gson gson = new Gson();
+	String redis_host = null;
+	String redis_port = null;
+	private static final String JEDIS_PASSWORD = System.getenv("REDIS_PASSWORD");
 	
 	public GameEndpoint() {
-		String redis_host = System.getenv("REDIS_HOST");
-		String redis_port = System.getenv("REDIS_PORT");
+		redis_host = System.getenv("REDIS_HOST");
+		redis_port = System.getenv("REDIS_PORT");
 		config = new JedisPoolConfig();
+		// JedisPool config
+		config.setMaxTotal(1000); // Set the maximum number of connections
+		config.setMaxIdle(999); // Set the maximum number of idle connections
+
 		jedisPool = new JedisPool(config, redis_host, Integer.parseInt(redis_port));
 	}
 
 	@OnOpen
 	public void onOpen(Session session, @PathParam("gameID") String gameID) throws IOException, EncodeException {
 		
-		// JedisPool config
-		config.setMaxTotal(1000); // Set the maximum number of connections
-		config.setMaxIdle(999); // Set the maximum number of idle connections
-
 		// Set timeout time to 5 minutes
 		session.setMaxIdleTimeout(300000);
 
@@ -59,7 +61,8 @@ public class GameEndpoint {
 
 		MatchmakerInfo mmInfo = new MatchmakerInfo(gameID);
 
-		jedis = jedisPool.getResource();
+		Jedis jedis = jedisPool.getResource();
+		jedis.auth(JEDIS_PASSWORD);
 		try {
 			if (jedis.exists(gameID)) { // I think this runs when player 2 joins
 				String json = jedis.get(gameID);
@@ -85,27 +88,33 @@ public class GameEndpoint {
 	}
 
 	public void subscribeJedis(GameEndpoint endpoint, String channel_name) {
-		new Thread() {
+		new Thread(new Runnable(){
 			public void run(){
-				Jedis jedis = jedisPool.getResource();
+				redis_host = System.getenv("REDIS_HOST");
+				redis_port = System.getenv("REDIS_PORT");
+				Jedis subscriberJedis = new Jedis(redis_host, Integer.parseInt(redis_port));
+				subscriberJedis.auth(JEDIS_PASSWORD);
 				try {
-					jedis.subscribe(new JedisPubSub() {
+					subscriberJedis.subscribe(new JedisPubSub() {
 						@Override
 						public void onMessage(String channel, String message) {
 							endpoint.onJedisPublish(channel, message);
 						}
 					}, channel_name);
+				} catch (Exception e) {
+					e.printStackTrace();
 				} finally {
-					if(jedis != null)
-						jedis.close();
+					if(subscriberJedis != null)
+					subscriberJedis.close();
 				}
 			}
-		}.start();
+		}).start();
 	}
 
 	// handle a new message from Redis
 	public void onJedisPublish(String channel, String message) {
-		jedis = jedisPool.getResource();
+		Jedis jedis = jedisPool.getResource();
+		jedis.auth(JEDIS_PASSWORD);
 		try {
 			String json = jedis.get(this.gameID);
 			TTTMatch match = gson.fromJson(json, TTTMatch.class);
@@ -120,6 +129,8 @@ public class GameEndpoint {
 				default:
 					System.out.println("Unknown Message Type!");
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		} finally {
 			if(jedis != null)
 				jedis.close();
@@ -144,7 +155,8 @@ public class GameEndpoint {
 	private void handleTurn(WSTurn turn, String gameID) {
 		// System.out.println("Player " + turn.getUid() + " sent move " + turn.getX() + turn.getY() + " into game " + gameID);
 
-		jedis = jedisPool.getResource();
+		Jedis jedis = jedisPool.getResource();
+		jedis.auth(JEDIS_PASSWORD);
 		try {
 			if(jedis.exists(gameID)) {
 				String json = jedis.get(gameID);
@@ -161,6 +173,7 @@ public class GameEndpoint {
 							jedis.publish(gameID, WSBean.GAME_OVER);
 							System.out.println("Game over! Removing...");
 							// jedis.del(gameID);
+							MatchmakerCloseMatch.closeMatch(gameID);
 						}
 					}
 				} else {
